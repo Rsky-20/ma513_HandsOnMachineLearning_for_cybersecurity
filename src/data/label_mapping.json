@@ -1,0 +1,9 @@
+{
+    "B-Action": 0,
+    "B-Entity": 1,
+    "B-Modifier": 2,
+    "I-Action": 3,
+    "I-Entity": 4,
+    "I-Modifier": 5,
+    "O": 6
+}
