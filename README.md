@@ -14,155 +14,154 @@
 ## Table of Contents
 1. [Introduction](#introduction)
 2. [General Methodology](#general-methodology)
-3. [Results](#results)
-4. [Future Improvements](#future-improvements)
-5. [Conclusion](#conclusion)
-6. [How to Run the Code](#how-to-run-the-code)
-7. [References](#references)
+3. [Analysis of the Database](#analysis-of-the-database)
+4. [Pre-processing Steps](#pre-processing-steps)
+5. [Model Selection and Experimental Settings](#model-selection-and-experimental-settings)
+6. [Results](#results)
+7. [Future Improvements](#future-improvements)
+8. [Conclusion](#conclusion)
+9. [How to Run the Code](#how-to-run-the-code)
+10. [References](#references)
 
 ---
 
 ## Introduction
 
-This project, conducted as part of the **Ma513 - Hands-on Machine Learning for Cybersecurity** module, explores the use of deep learning models for Named Entity Recognition (NER) in unstructured textual data. NER is a subfield of Natural Language Processing (NLP) that identifies and classifies specific entities such as locations, organizations, and people automatically.
+This project, conducted as part of the **Ma513 - Hands-on Machine Learning for Cybersecurity** module, explores the use of deep learning models for Named Entity Recognition (NER) in unstructured textual data. NER identifies and classifies specific entities such as locations, organizations, and people automatically.
 
-Our team chose to utilize a pre-trained BERT model, fine-tuned to maximize accuracy in a cybersecurity context.
+Our team leveraged a pre-trained BERT model, fine-tuned to maximize accuracy in a cybersecurity context. The work also involved deep learning techniques for understanding semantic relationships within text.
 
 ---
 
 ## General Methodology
 
-### **Data Exploration and Preprocessing**
+### Data Tokenization
 
-The dataset is sourced from SemEval-2018 Task 8 ("SecureNLP") and is formatted in JSON Lines. Each entry contains:
+- Tokenization transforms raw text into a format understandable by the model.
+- Labels use the IOB2 format (Inside, Outside, Beginning).
 
-- `unique_id`: Unique identifier for the sentence.
-- `tokens`: List of tokens (strings) forming the text.
-- `ner_tags`: Named Entity Recognition tags following the IOB2 convention.
+### Classification
 
-Example Entry:
+- Entities are classified into Action, Entity, and Modifier classes.
+- Training involves splitting data into training, validation, and test sets.
 
-```json
-{
-   "unique_id": 4775,
-   "tokens": [
-      "This", 
-      "collects", 
-      ":", 
-      "Collected", 
-      "data", 
-      "will", 
-      "be", 
-      "uploaded", 
-      "to", 
-      "a", 
-      "DynDNS", 
-      "domain", 
-      "currently", 
-      "hosted", 
-      "on", 
-      "a", 
-      "US", 
-      "webhosting", 
-      "service", 
-      "."
-   ],
-   "ner_tags": [
-      "B-Entity", 
-      "B-Action", 
-      "O", 
-      "B-Entity", 
-      "I-Entity", 
-      "O", 
-      "B-Action", 
-      "I-Action", 
-      "B-Modifier", 
-      "B-Entity", 
-      "I-Entity", 
-      "I-Entity", 
-      "I-Entity", 
-      "I-Entity", 
-      "I-Entity", 
-      "I-Entity", 
-      "I-Entity", 
-      "I-Entity", 
-      "I-Entity", 
-      "O"
-   ]
-}
-```
+### Validation
 
-### **Model Selection**
+- Fine-tuning was performed, followed by model validation using F1 scores and other metrics.
 
-- Evaluation of various approaches (rule-based systems, machine learning, deep learning).
-- Adoption of **BERT**, a bidirectional neural network model, known for its outstanding performance in complex NLP tasks.
+---
 
-### **Training and Fine-Tuning**
+## Analysis of the Database
 
-- Loading and configuring hyperparameters for the BERT model.
-- Fine-tuning the last layers of the network to improve results.
-- Optimizing weights using the **AdamW** optimizer.
+- **Format**: JSON Lines with `unique_id`, `tokens`, and `ner_tags`.
+- **Labeling Scheme**: IOB2 format for tagging entities.
+- **Classes Observed**: Action, Entity, Modifier.
+- **Observations**:
+  - Sentences are tokenized and include punctuation.
+  - Data is already prepared for training and testing.
 
-### **Result Evaluation**
+---
 
-- Performance measurement using metrics such as the **F1 score**.
-- Detailed analysis of results by class: Action, Entity, Modifier.
+## Pre-processing Steps
+
+1. Convert input files to DataFrames for easier manipulation.
+2. Use functions for loading, converting, and tokenizing data:
+   - `load_and_prepare_data`
+   - `convert_to_dataset_with_labels`
+   - `tokenize_and_align_labels`
+3. Tokenize datasets for efficient processing:
+   ```python
+   tokenized_datasets = ner_data.map(tokenize_and_align_labels, batched=True)
+   ```
+
+---
+
+## Model Selection and Experimental Settings
+
+### Model Selection
+
+- Chosen Model: **BERT** (Bidirectional Encoder Representations from Transformers).
+- Pre-trained model: `dslim/bert-large-NER`.
+- Selected for its ability to understand both syntactic and semantic contexts.
+
+### Hyperparameter Initialization
+
+- **Learning Rate**: 2 × 10⁻⁵
+- **Batch Size**: 32
+- **Epochs**: 10
+
+Hyperparameter tuning showed minimal effects on performance.
+
+### Metrics
+
+- **Precision**: Correctly predicted entities / Total predicted entities.
+- **Recall**: Correctly predicted entities / Total actual entities.
+- **F1 Score**: Harmonic mean of precision and recall.
+- **Accuracy**: Correctly classified tokens / Total tokens.
 
 ---
 
 ## Results
 
-- **Global F1 Score:** 27.85%
-  - Highlights the need for improvement, particularly in terms of precision (23.88%) and recall (33.39%).
-- **Class-wise Results:**
-  - **Action:** F1 = 57.21%
-  - **Modifier:** F1 = 56.03%
-  - **Entity:** F1 = 11.39%
+### Global Results
 
-While the Action and Modifier classes showed acceptable performance, the Entity class proved particularly challenging, likely due to its contextual complexity.
+- **F1 Score**: 27.85%
+- **Precision**: 23.88%
+- **Recall**: 33.39%
+
+### Class-wise Results
+
+- **Action**: F1 = 57.21%
+- **Modifier**: F1 = 56.03%
+- **Entity**: F1 = 11.39%
+
+The Entity class performed poorly, indicating challenges with contextual understanding.
 
 ---
 
 ## Future Improvements
 
-Integrating a hybrid system combining BERT with advanced techniques, such as **semantic role labeling**, could enhance performance by leveraging contextual relationships more effectively.
-Remove punctuation.
+- Integrate a **hybrid model** combining BERT with semantic role labeling techniques to better capture contextual relationships.
+- Explore methods for handling punctuation effectively.
 
 ---
 
 ## Conclusion
 
-Despite technical challenges, our project demonstrated the effectiveness of BERT in an NER task for cybersecurity. Using a large model with fine-tuning significantly improved results. However, exploring hybrid approaches offers promising potential for future advancements.
+The project demonstrated the utility of BERT for NER tasks in cybersecurity, achieving moderate success with Action and Modifier classes. Future work should focus on hybrid approaches and enhancing contextual learning.
 
 ---
 
 ## How to Run the Code
 
-### **Prerequisites**
+### Prerequisites
 
-1. **Install Python 3.8 or later.**
+1. **Install Python 3.8 or later**.
    - Ensure `pip` is installed.
-2. **Install dependencies:**
+2. **Install dependencies**:
    ```bash
    pip install -r requirements.txt
    pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cuXXX
    ```
-   And install the version of torch, torchvision and torchaudio with your following version of CUDA. If you don't have CUDA on your 
-3. **Clone the repository and navigate to the project directory:**
+   Replace `cuXXX` with your CUDA version. Use CPU-compatible versions if CUDA is unavailable.
+3. **Clone the repository**:
    ```bash
    git clone https://github.com/Rsky-20/ma513_HandsOnMachineLearning_for_cybersecurity
    cd ma513_HandsOnMachineLearning_for_cybersecurity
    ```
-4. **Prepare the dataset:**
-   - Place the JSON Lines files (`NER-TRAINING.jsonlines`, `NER-VALIDATION.jsonlines`, `NER-TESTING.jsonlines`) in the `./data/` directory.
+4. **Prepare the dataset**:
+   Place the JSON Lines files (`NER-TRAINING.jsonlines`, `NER-VALIDATION.jsonlines`, `NER-TESTING.jsonlines`) in the `./data/` directory.
 
-### **Run the Training Script**
+### Run the Training Script
 
+```bash
+python train_ner.py
+```
 
-### **Outputs**
+### Outputs
 
-- The fine-tuned model is saved in the `./ner-model/` directory.
-- Predictions are saved as JSON Lines in the `./data/` directory.
+- Fine-tuned model: `./ner-model/`
+- Predictions: `./data/`
 
 ---
 
